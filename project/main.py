@@ -4,7 +4,8 @@ from pydantic import BaseModel
 from starlette.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from starlette.websockets import WebSocket, WebSocketDisconnect
-
+import models
+from db import SessionLocal, engine
 class Item(BaseModel):
     name:str
     price:float
@@ -34,6 +35,7 @@ class ConnectionManager:
 app=FastAPI()
 templates = Jinja2Templates(directory="templates")
 manager=ConnectionManager()
+models.Base.metadata.create_all(bind=engine)
 
 @app.get("/")
 async def reed_root():
