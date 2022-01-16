@@ -1,11 +1,14 @@
 from typing import List, Optional
 from fastapi import FastAPI, Form, Request
 from pydantic import BaseModel
-from starlette.responses import HTMLResponse
+from starlette.responses import HTMLResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
 from starlette.websockets import WebSocket, WebSocketDisconnect
 import models
+
+from starlette_wtf import csrf_protect 
 from db import SessionLocal, engine
+from forms import User
 class Item(BaseModel):
     name:str
     price:float
@@ -37,7 +40,7 @@ templates = Jinja2Templates(directory="templates")
 manager=ConnectionManager()
 models.Base.metadata.create_all(bind=engine)
 
-@app.get("/")
+@app.get("/start")
 async def reed_root():
     return {"Hello":"World"}
 
@@ -51,10 +54,10 @@ async def update_item(item_id: int, item:Item):
     return {"item_price": item.price, "item_id":item_id} 
 
 
-@app.get("/login")
+@app.get("/chat")
 async def open_chat(request:Request):
     
-    return templates.TemplateResponse("login.html", {"request":request})
+    return templates.TemplateResponse("chat.html", {"request":request})
 
 @app.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket:WebSocket, client_id:int):
@@ -68,3 +71,15 @@ async def websocket_endpoint(websocket:WebSocket, client_id:int):
         manager.disconnect(websocket)
         await manager.broadcast(f"Client #{client_id} left the chat")
         
+@app.route('/', methods=['GET', 'POST'])
+
+async def index(request):
+    """GET|POST /: form handler
+    """
+    form = await User.from_formdata(request)
+    
+    if await form.validate_on_submit():
+        print(form.name.data)
+        return PlainTextResponse('SUCCESS')
+    return templates.TemplateResponse("login.html", {"request":request, "form":form})
+  
