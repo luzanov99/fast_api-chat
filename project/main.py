@@ -1,14 +1,16 @@
 from typing import List, Optional
-from fastapi import FastAPI, Form, Request
+from fastapi import FastAPI, Form, Request, Depends
 from pydantic import BaseModel
 from starlette.responses import HTMLResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
 from starlette.websockets import WebSocket, WebSocketDisconnect
 import models
-
 from starlette_wtf import csrf_protect 
 from db import SessionLocal, engine
 from forms import User
+from models import User
+from sqlalchemy.orm import Session
+
 class Item(BaseModel):
     name:str
     price:float
@@ -82,4 +84,17 @@ async def index(request):
         print(form.name.data)
         return PlainTextResponse('SUCCESS')
     return templates.TemplateResponse("login.html", {"request":request, "form":form})
-  
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+@app.get('/get_user/')
+async def get_user( user_id: int,db: Session = Depends(get_db)):
+    print(db.query(models.User).filter(models.User.id == user_id).first())
+    return db.query(models.User).filter(models.User.id == user_id).first()
+
