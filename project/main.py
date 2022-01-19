@@ -9,6 +9,7 @@ from starlette_wtf import csrf_protect
 from db import SessionLocal, engine
 from forms import User
 from models import User
+from shemas import UserA
 from sqlalchemy.orm import Session
 
 class Item(BaseModel):
@@ -98,3 +99,10 @@ async def get_user( user_id: int,db: Session = Depends(get_db)):
     print(db.query(models.User).filter(models.User.id == user_id).first())
     return db.query(models.User).filter(models.User.id == user_id).first()
 
+@app.post('/create_user/', response_model=UserA)
+async def create_user(user: UserA,db: Session=Depends(get_db) ):
+    db_user = models.User(email=user.email, hashed_password=user.password, is_active=True)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
