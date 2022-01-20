@@ -3,9 +3,9 @@
     <form method="post" novalidate>
       {{ form.csrf_token }}
       <div>
-        {{ form.name(placeholder='Name') }}
-        {% if form.name.errors -%}
-        <span>{{ form.name.errors[0] }}</span>
+        {{ form.login(placeholder='Login') }}
+        {% if form.login.errors -%}
+        <span>{{ form.login.errors[0] }}</span>
         {%- endif %}
       </div>
       <button type="submit">Submit</button>

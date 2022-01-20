@@ -1,0 +1,16 @@
+<html>
+  <body>
+    <form method="post" novalidate>
+      {{ form.csrf_token }}
+      <div>
+        {{ form.name(placeholder='Name') }}
+        {% if form.name.errors -%}
+        <span>{{ form.name.errors[0] }}</span>
+        {%- endif %}
+        {{ form.email(placeholder='Email') }}
+        {{ form.password(placeholder='password') }}
+      </div>
+      <button type="submit">Submit</button>
+    </form>
+  </body>
+</html>

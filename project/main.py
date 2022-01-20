@@ -7,7 +7,7 @@ from starlette.websockets import WebSocket, WebSocketDisconnect
 import models
 from starlette_wtf import csrf_protect 
 from db import SessionLocal, engine
-from forms import User
+from forms import RegisterUserForm, LoginUserForm
 from models import User
 from shemas import UserA
 from sqlalchemy.orm import Session
@@ -79,10 +79,10 @@ async def websocket_endpoint(websocket:WebSocket, client_id:int):
 async def index(request):
     """GET|POST /: form handler
     """
-    form = await User.from_formdata(request)
+    form = await LoginUserForm.from_formdata(request)
     
     if await form.validate_on_submit():
-        print(form.name.data)
+        print(form.login.data)
         return PlainTextResponse('SUCCESS')
     return templates.TemplateResponse("login.html", {"request":request, "form":form})
 
@@ -106,3 +106,12 @@ async def create_user(user: UserA,db: Session=Depends(get_db) ):
     db.commit()
     db.refresh(db_user)
     return db_user
+
+@app.route('/register/',methods=['GET', 'POST'])
+async def register(request):
+    form = await RegisterUserForm.from_formdata(request)
+    
+    if await form.validate_on_submit():
+        print(form.name.data)
+        return PlainTextResponse('SUCCESS')
+    return templates.TemplateResponse("register.html", {"request":request, "form":form})
